@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "thilisynth"
+version = "0.1.0"
+description = "Generate an industry dataset when the real data is confidential — sample the record, let a local LLM render the noise, and keep the labels. No API keys."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [{ name = "thili.ai" }]
+keywords = ["synthetic-data", "llm", "ollama", "dataset", "logistics", "freight", "local-llm"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Developers",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Zero runtime dependencies: the whole library is stdlib (urllib talks to Ollama).
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/thili-ai/thilisynth"
+Repository = "https://github.com/thili-ai/thilisynth"
+"Learn Fast course" = "https://learnfast.thili.ai"
+
+[tool.hatch.build.targets.wheel]
+packages = ["thilisynth"]

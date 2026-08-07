@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+
+# Agent scratch / sandboxes
+.thilicodex/
+sandbox/
+*.db
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Corpora are reproducible from their seed — regenerate, do not commit.
+corpora/
