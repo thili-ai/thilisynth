@@ -84,8 +84,24 @@ _SHIPPER_SUFFIX = ["Foods LLC", "Distributing Inc", "Brands Co", "Growers Co-op"
 _CARRIER_SUFFIX = ["Trucking LLC", "Transport Inc", "Logistics LLC", "Freight Lines",
                    "Carriers Inc", "Express LLC", "Motor Freight"]
 
-SHIPPERS = [f"{s} {x}" for s in _SURNAMES for x in _SHIPPER_SUFFIX][:80]
-CARRIERS = [f"{s} {x}" for s in reversed(_SURNAMES) for x in _CARRIER_SUFFIX][:70]
+def _names(surnames, suffixes, n, seed):
+    """Build company names, then decorrelate list order from surname.
+
+    `Sampler.zipf` weights by *position*, so a surname-major list would make the
+    eight "Ashland ..." entries the eight most frequent shippers in every corpus —
+    a heavy tail that is really one family name repeated. Shuffling once, with a
+    fixed seed, keeps the distribution heavy-tailed and reproducible while making
+    rank independent of the name.
+    """
+    import random as _random
+
+    out = [f"{s} {x}" for s in surnames for x in suffixes]
+    _random.Random(seed).shuffle(out)
+    return out[:n]
+
+
+SHIPPERS = _names(_SURNAMES, _SHIPPER_SUFFIX, 80, seed=20260806)
+CARRIERS = _names(_SURNAMES, _CARRIER_SUFFIX, 70, seed=20260807)
 
 # Lane rate anchors, $/mile, by equipment. Rough but not arbitrary.
 RATE_PER_MILE = {

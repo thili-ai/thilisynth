@@ -94,3 +94,34 @@ def test_zipf_is_actually_skewed():
     draws = [s.zipf(list("abcdefghij")) for _ in range(1000)]
     counts = sorted(s.distribution(draws).values(), reverse=True)
     assert counts[0] > counts[-1] * 3, "zipf sampling produced a flat distribution"
+
+
+def test_vague_pickup_leaves_email_headers_alone():
+    """A dispatcher being vague does not make the mail server vague.
+
+    An earlier version rewrote every date in the document, producing
+    "Sent: early in the week, morning preferred, September 1, 2026" — a header no
+    mail client has ever generated, and an instant tell that the corpus is fake.
+    """
+    import dataclasses
+    from thilisynth.core.defects import vague_pickup
+    from thilisynth.core.sample import Sampler
+    from thilisynth.packs.logistics.records import sample_tender
+    from thilisynth.packs.logistics.specs import TENDER_EMAIL
+    from thilisynth.renderers.scripted import ScriptedRenderer
+
+    record = dataclasses.asdict(sample_tender(Sampler(20260806), 0))
+    clean = ScriptedRenderer(seed=1).render(record, TENDER_EMAIL)
+    damaged, flag = vague_pickup(clean, record, random.Random(0))
+
+    assert flag == "vague_pickup"
+    sent = [l for l in damaged.splitlines() if l.startswith("Sent:")]
+    assert sent, "the thread lost its headers"
+    for line in sent:
+        assert "week" not in line, f"header was rewritten: {line}"
+        assert ":" in line.split("Sent:")[1], f"header lost its clock time: {line}"
+
+    body = "\n".join(l for l in damaged.splitlines() if not l.startswith(("From:", "To:", "Sent:", "Subject:")))
+    assert record["pickup_date"] not in body
+    assert record["pickup_window"] not in body
+    assert "between -" not in body and "window -" not in body, "punctuation debris left behind"

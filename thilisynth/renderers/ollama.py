@@ -60,24 +60,40 @@ class OllamaRenderer(Renderer):
                 f"Start it with `ollama serve` and `ollama pull {self.model}`. ({e})"
             ) from e
 
-    def render(self, record: Dict[str, Any], spec: RenderSpec) -> str:
-        if not spec.prompt:
-            raise ValueError(f"RenderSpec(kind={spec.kind!r}) has no `prompt`.")
-        prompt = spec.prompt.format(record=json.dumps(record, indent=2), **record)
+    def complete(
+        self,
+        prompt: str,
+        max_tokens: int = 400,
+        temperature: Optional[float] = None,
+    ) -> str:
+        """Free-form completion. Records tokens and seconds in `last_stats`.
+
+        This is the plain "talk to the model" entry point; `render()` is the same
+        call with a record formatted into a pack's prompt template.
+        """
         options: Dict[str, Any] = {
-            "temperature": self.temperature,
-            "num_predict": spec.max_tokens,
+            "temperature": self.temperature if temperature is None else temperature,
+            "num_predict": max_tokens,
         }
         if self.seed is not None:
             options["seed"] = self.seed
         out = self._post({
             "model": self.model, "prompt": prompt, "stream": False, "options": options,
         })
+        tokens = out.get("eval_count", 0)
+        seconds = round(out.get("eval_duration", 0) / 1e9, 3)
         self.last_stats = {
-            "eval_count": out.get("eval_count", 0),
-            "eval_duration_s": round(out.get("eval_duration", 0) / 1e9, 3),
+            "tokens": tokens,
+            "seconds": seconds,
+            "tokens_per_second": round(tokens / seconds, 1) if seconds else 0.0,
         }
         return out["response"].strip()
+
+    def render(self, record: Dict[str, Any], spec: RenderSpec) -> str:
+        if not spec.prompt:
+            raise ValueError(f"RenderSpec(kind={spec.kind!r}) has no `prompt`.")
+        prompt = spec.prompt.format(record=json.dumps(record, indent=2), **record)
+        return self.complete(prompt, max_tokens=spec.max_tokens)
 
     def generate_json(self, prompt: str, schema: Dict[str, Any], max_tokens: int = 400) -> Dict[str, Any]:
         """Schema-constrained decoding — the shape is guaranteed, the truth is not.

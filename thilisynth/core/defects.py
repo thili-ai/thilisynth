@@ -26,33 +26,62 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 Defect = Callable[[str, Dict[str, Any], random.Random], Tuple[str, Optional[str]]]
 
+_MONTH = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*"
+_DAY = r"(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*"
 _DATE = re.compile(
-    r"\b(?:\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}(?:/\d{2,4})?|"
-    r"(?:Mon|Tues?|Wed(?:nes)?|Thur?s?|Fri|Sat(?:ur)?|Sun)(?:day)?\b[^,\n]{0,12}?)"
-    r"(?:\s+\d{1,2}:\d{2}\s?(?:[AaPp]\.?[Mm]\.?)?)?",
+    rf"\b(?:\d{{4}}-\d{{2}}-\d{{2}}"                                  # 2026-09-03
+    rf"|\d{{1,2}}/\d{{1,2}}(?:/\d{{2,4}})?"                           # 9/3/26
+    rf"|{_DAY},?\s+{_MONTH}\s+\d{{1,2}}(?:,\s*\d{{4}})?"              # Tuesday, September 1, 2026
+    rf"|{_MONTH}\s+\d{{1,2}}(?:,\s*\d{{4}})?"                         # September 1, 2026
+    rf"|{_DAY})\b",                                                   # Tuesday
+    re.I,
 )
+_TIME_RANGE = re.compile(r"\b\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2}\b")
 _TIME = re.compile(r"\b\d{1,2}:\d{2}\s?(?:[AaPp]\.?[Mm]\.?)?\b")
+# Email envelope lines carry real timestamps; a dispatcher being vague about the
+# pickup does not make the mail server vague about when the mail was sent.
+_HEADER = re.compile(r"^\s*(?:From|To|Sent|Date|Subject|Cc):", re.I)
 
 _VAGUE = [
     "early next week, AM if you can",
     "sometime next week",
     "start of the week works",
     "early in the week, morning preferred",
-    "next week — will confirm the day",
+    "next week - will confirm the day",
 ]
 
 
 def vague_pickup(text: str, record: Dict[str, Any], rng: random.Random):
-    """Strip every explicit date and clock time; leave a dispatcher's hand-wave.
+    """Replace the stated pickup date/window with a dispatcher's hand-wave.
 
     The most common real defect and the one with the worst blast radius: an agent
     that resolves "early next week" into a timestamp has invented a dock booking.
+
+    Only body lines are touched. Rewriting the `Sent:` headers too — which an
+    earlier version did — produced "Sent: early in the week, September 1, 2026",
+    which is not a document any mail client has ever generated.
     """
-    out = _TIME.sub("", text)
-    out = _DATE.sub(lambda m: rng.choice(_VAGUE), out)
-    if out == text:
+    phrase = rng.choice(_VAGUE)
+    changed = False
+    lines = []
+    for line in text.splitlines():
+        if _HEADER.match(line):
+            lines.append(line)
+            continue
+        new = re.sub(r"\b(between|window|from)\s+" + _TIME_RANGE.pattern, "", line, flags=re.I)
+        new = _TIME_RANGE.sub("", new)
+        new = _TIME.sub("", new)
+        new = _DATE.sub(phrase, new)
+        if new != line:
+            changed = True
+            # Tidy the punctuation the removals left behind: "for , window ." etc.
+            new = re.sub(r"\s+([,.])", r"\1", new)
+            new = re.sub(r",\s*\.", ".", new)
+            new = re.sub(r" {2,}", " ", new).rstrip(" ,")
+        lines.append(new)
+    if not changed:
         return text, None
-    return re.sub(r" {2,}", " ", out), "vague_pickup"
+    return "\n".join(lines), "vague_pickup"
 
 
 def unit_confusion(text: str, record: Dict[str, Any], rng: random.Random):
