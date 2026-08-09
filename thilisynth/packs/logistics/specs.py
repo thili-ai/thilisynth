@@ -49,8 +49,15 @@ _CLOSERS = ["Thanks", "Thanks,", "Appreciate it", "LMK", "Regards"]
 
 
 def _addr(company: str, mailbox: str) -> str:
+    """`Company Name <mailbox@company.com>` — display name AND address.
+
+    Real mail carries both, and the display name is how a downstream agent knows
+    which carrier it is talking to. An earlier version emitted the bare address, so
+    every party in the corpus was anonymous and any consumer had to guess from the
+    domain.
+    """
     slug = company.split()[0].lower()
-    return f"{mailbox}@{slug}.com"
+    return f"{company} <{mailbox}@{slug}.com>"
 
 
 def tender_thread(r: Dict[str, Any], rng: random.Random) -> str:
