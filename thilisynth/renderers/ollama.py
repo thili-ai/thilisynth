@@ -18,11 +18,25 @@ Whatever you use, the output goes through `core.verify` before it enters a corpu
 from __future__ import annotations
 
 import json
+import os
 import urllib.error
 import urllib.request
 from typing import Any, Dict, Optional
 
 from .base import Renderer, RenderSpec
+
+
+DEFAULT_HOST = "http://127.0.0.1:11434"
+
+
+def default_host() -> str:
+    """The Ollama address: `OLLAMA_HOST` if set (the variable the `ollama` CLI itself uses), else localhost.
+
+    Inside a container, set it to http://host.docker.internal:11434 once, and no notebook needs editing.
+    A bare "host:port" gets an http:// in front of it.
+    """
+    host = os.environ.get("OLLAMA_HOST", "").strip() or DEFAULT_HOST
+    return host if "://" in host else f"http://{host}"
 
 
 class OllamaRenderer(Renderer):
@@ -33,13 +47,13 @@ class OllamaRenderer(Renderer):
     def __init__(
         self,
         model: str = "qwen2.5:7b",
-        host: str = "http://127.0.0.1:11434",
+        host: Optional[str] = None,
         temperature: float = 0.8,
         seed: Optional[int] = None,
         timeout: int = 600,
     ):
         self.model = model
-        self.host = host.rstrip("/")
+        self.host = (host or default_host()).rstrip("/")
         self.temperature = temperature
         self.seed = seed
         self.timeout = timeout
