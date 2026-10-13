@@ -20,8 +20,12 @@ Constrained decoding guarantees the shape. It never guarantees the truth.
 from __future__ import annotations
 
 import dataclasses
+import types
 import typing
 from typing import Any, Dict, List, Optional, Type
+
+# Optional[X] is typing.Union; "X | None" is types.UnionType on Python 3.10+.
+_UNIONS = {typing.Union} | ({types.UnionType} if hasattr(types, "UnionType") else set())
 
 _JSON_TYPES = {
     str: "string",
@@ -34,14 +38,14 @@ _JSON_TYPES = {
 
 def _json_type(py_type: Any) -> str:
     """Map a Python annotation to a JSON Schema type name."""
+    origin = typing.get_origin(py_type)
     # Unwrap Optional[X] / X | None, which dataclass fields use for absent values.
-    args = getattr(py_type, "__args__", None)
-    if args:
-        non_none = [a for a in args if a is not type(None)]  # noqa: E721
-        if non_none:
-            py_type = non_none[0]
-    origin = typing.get_origin(py_type) or py_type
-    return _JSON_TYPES.get(origin, "string")
+    # Only a Union is unwrapped: List[str] also has __args__, and unwrapping it would
+    # report a list of strings as a plain string.
+    if origin in _UNIONS:
+        non_none = [a for a in typing.get_args(py_type) if a is not type(None)]  # noqa: E721
+        return _json_type(non_none[0]) if non_none else "string"
+    return _JSON_TYPES.get(origin or py_type, "string")
 
 
 def json_schema(
