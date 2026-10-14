@@ -55,6 +55,8 @@ KNOWN_GAPS = [
     "safety rating) needs the FMCSA Company Census and is not loaded yet.",
     "US truckload conventions only. Indian freight (LR copies, e-way bills, GST) is absent.",
     "Single-leg loads only — no multi-stop, no intermodal, no cross-dock.",
+    "Mileage is great-circle distance x 1.17, which under-reads mountain routes: Fresno to Reno "
+    "comes out near 226 miles against about 340 by road.",
 ]
 
 
