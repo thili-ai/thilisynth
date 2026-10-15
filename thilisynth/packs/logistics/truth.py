@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
 
-from .carriers import Carrier, carrier_ask
+from .carriers import Carrier, carrier_floor
 from .ratecard import RATE_CARD, RateCard
 
 # The defect flags that put a thread beyond the desk's authority, and the reason each stands for.
@@ -90,7 +90,8 @@ def truth_for(
     max_buy = card.max_buy_for_margin(sell)
     candidates = [c for c in carriers if serves(c, record)]
     vetted = [c for c in candidates if not vetting_failures(c, record["pickup_date"])]
-    affordable = [c for c in vetted if (carrier_ask(c, record["miles"]) or 10**9) <= max_buy]
+    # Affordable means the carrier will accept a price the desk can pay, which negotiation may reach.
+    affordable = [c for c in vetted if (carrier_floor(c, record["miles"]) or 10**9) <= max_buy]
     if not vetted:
         reasons.append("carrier_unvetted")
     elif not affordable:

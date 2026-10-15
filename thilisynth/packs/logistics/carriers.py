@@ -208,6 +208,18 @@ def carrier_ask(c: Carrier, miles: int) -> Optional[int]:
     return max(25, int(round(raw / 25)) * 25)
 
 
+def carrier_floor(c: Carrier, miles: int) -> Optional[int]:
+    """The lowest price this carrier will accept for a load of `miles`: 95% of its ask, to the $25 below.
+
+    A carrier asks for its average rate and will come down to this, no further. Negotiation is the
+    space between the two: the agent offers, the carrier counters, and no deal is struck below the floor.
+    """
+    ask = carrier_ask(c, miles)
+    if ask is None:
+        return None
+    return max(25, int(ask * 0.95) // 25 * 25)
+
+
 def name_similarity(a: str, b: str) -> float:
     return difflib.SequenceMatcher(None, a.lower(), b.lower()).ratio()
 

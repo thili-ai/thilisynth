@@ -10,7 +10,7 @@ from thilisynth.packs.logistics import (
 )
 from thilisynth.packs.logistics import reference as ref
 from thilisynth.packs.logistics.carriers import (
-    AS_OF, MIN_PER_TRAP, TRAP_RATES, carrier_ask, name_similarity, observed_traps,
+    AS_OF, MIN_PER_TRAP, TRAP_RATES, carrier_ask, carrier_floor, name_similarity, observed_traps,
 )
 from thilisynth.packs.logistics.truth import REASON_PRIORITY, vetting_failures
 
@@ -125,7 +125,7 @@ def test_acceptable_carriers_pass_vetting_and_the_price():
         for cid in o.acceptable_carriers:
             c = carriers[cid]
             assert not vetting_failures(c, row.record["pickup_date"])
-            assert carrier_ask(c, row.record["miles"]) <= o.max_buy_usd
+            assert carrier_floor(c, row.record["miles"]) <= o.max_buy_usd
             assert not c.lookalike_of
 
 
@@ -153,3 +153,13 @@ def test_cards_render_and_state_their_limits():
     outcomes = build_truth(corpus.rows, carriers)
     for text in (carriers_card(carriers, 20260806), ratecard_card(RATE_CARD), truth_card(outcomes, RATE_CARD)):
         assert text.startswith("# Corpus Card") and "does NOT contain" in text
+
+
+def test_a_carrier_will_come_down_but_not_below_its_floor():
+    for c in generate_carriers():
+        for miles in (300, 1200, 2000):
+            ask, floor = carrier_ask(c, miles), carrier_floor(c, miles)
+            if c.rate_history:
+                assert floor <= ask and floor >= int(ask * 0.94) // 25 * 25
+            else:
+                assert ask is None and floor is None
