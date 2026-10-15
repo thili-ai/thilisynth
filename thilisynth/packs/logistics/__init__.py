@@ -23,6 +23,10 @@ from .records import (
     sample_tender,
 )
 from .specs import TENDER_EMAIL
+from .cards import carriers_card, ratecard_card, truth_card
+from .carriers import Carrier, generate_carriers
+from .ratecard import RATE_CARD, RateCard
+from .truth import Outcome, build_truth, truth_for, truth_summary
 
 # Which record fields `core.verify` checks, and how.
 TENDER_VERIFY = {
@@ -102,4 +106,7 @@ def extraction_schema() -> Dict[str, Any]:
 __all__ = [
     "LoadTender", "sample_tender", "generate_tenders", "extraction_schema",
     "TENDER_EMAIL", "TENDER_DEFECTS", "TENDER_VERIFY", "SOURCES", "KNOWN_GAPS", "ref",
+    # the booking desk's world (carriers-v1, ratecard-v1, and the ground truth)
+    "Carrier", "generate_carriers", "RateCard", "RATE_CARD", "Outcome", "build_truth", "truth_for",
+    "truth_summary", "carriers_card", "ratecard_card", "truth_card",
 ]

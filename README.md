@@ -118,7 +118,26 @@ thilisynth/
     ollama.py     a local model, stdlib urllib
   packs/
     logistics/    freight: LoadTender, reference tables, render specs
+      carriers.py   the carrier master (carriers-v1), with planted vetting traps
+      ratecard.py   the booking desk's rates and rules (ratecard-v1)
+      truth.py      the right answer for every tender: book a carrier, or escalate for a reason
+      cards.py      corpus cards for the three above
+      booking_data.py  builds all of it with one command
 ```
+
+## The booking desk's data
+
+Tenders alone give a booking agent nothing to search, vet or price against. This builds the rest, from the
+same reference tables, so the three fit together: every tender's carrier resolves to a row in the carrier
+master, and the rate card uses the anchors the tenders were priced from.
+
+```bash
+python -m thilisynth.packs.logistics.booking_data --out corpora/booking-v1
+```
+
+It writes the carrier master, the rate card and the ground truth for every tender, each with a corpus card
+that says what it does not contain. The truth is derived in code from facts planted in the data, never asked
+of a model, and its rules live here, apart from any agent's own policy, so an agent cannot mark itself right.
 
 `core/` not importing from `packs/` is the load-bearing constraint. The next industry corpus —
 prior-auth letters, FNOL calls, dispute tickets — is a new pack against an unchanged core.
