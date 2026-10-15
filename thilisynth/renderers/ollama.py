@@ -125,4 +125,11 @@ class OllamaRenderer(Renderer):
             "format": schema,
             "options": {"temperature": 0.0, "num_predict": max_tokens},
         })
+        tokens = out.get("eval_count", 0)
+        seconds = round(out.get("eval_duration", 0) / 1e9, 3)
+        self.last_stats = {
+            "tokens": tokens,
+            "seconds": seconds,
+            "tokens_per_second": round(tokens / seconds, 1) if seconds else 0.0,
+        }
         return json.loads(out["response"])

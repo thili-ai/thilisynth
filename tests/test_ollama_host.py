@@ -19,3 +19,12 @@ def test_a_bare_host_and_port_gets_a_scheme(monkeypatch):
 def test_an_explicit_host_beats_the_environment(monkeypatch):
     monkeypatch.setenv("OLLAMA_HOST", "http://elsewhere:1")
     assert OllamaRenderer(host="http://127.0.0.1:9999").host == "http://127.0.0.1:9999"
+
+
+def test_generate_json_records_tokens_and_seconds(monkeypatch):
+    from thilisynth.renderers.ollama import OllamaRenderer
+
+    r = OllamaRenderer(model="m")
+    monkeypatch.setattr(r, "_post", lambda body: {"response": '{"a": 1}', "eval_count": 40, "eval_duration": 2_000_000_000})
+    assert r.generate_json("p", {"type": "object"}) == {"a": 1}
+    assert r.last_stats["tokens"] == 40 and r.last_stats["seconds"] == 2.0
