@@ -33,6 +33,12 @@ from .paperwork import (
     generate_docs, generate_paperwork, outcome_for, paperwork_stats, CONSIGNEES, PAPER_REASON_PRIORITY,
 )
 from .paperwork_rules import DESK_CARD, DeskCard
+from .audit import (
+    AUDIT_DEFECTS, CODES, DIALECTS, EVIDENCE_SOURCE, AuditedLoad, ExpectedLine, GateEvent, Invoice, InvoiceLine, InvoiceTruth,
+    RateConfirmation, audit_stats, detention_hours, fuel_usd, generate_audit, generate_invoices,
+)
+from .audit_rules import AUDIT_CARD, AuditCard
+from .cards import auditrules_card, audit_truth_card, invoices_card
 
 # Which record fields `core.verify` checks, and how.
 TENDER_VERIFY = {
@@ -119,4 +125,8 @@ __all__ = [
     "BOL_FIELDS", "POD_FIELDS", "Booking", "LoadPaperwork", "Page", "PageTruth", "PaperOutcome", "Token",
     "canonical_value", "CONSIGNEES", "PAPER_REASON_PRIORITY", "generate_docs", "generate_paperwork", "outcome_for", "paperwork_stats",
     "DESK_CARD", "DeskCard", "docs_card", "deskcard_card", "paperwork_truth_card",
+    # the billing desk's world (invoices-v1, auditdesk-rules-v1, and the ground truth)
+    "AUDIT_DEFECTS", "CODES", "DIALECTS", "EVIDENCE_SOURCE", "AuditedLoad", "ExpectedLine", "GateEvent", "Invoice", "InvoiceLine",
+    "InvoiceTruth", "RateConfirmation", "audit_stats", "detention_hours", "fuel_usd", "generate_audit", "generate_invoices",
+    "AUDIT_CARD", "AuditCard", "invoices_card", "auditrules_card", "audit_truth_card",
 ]

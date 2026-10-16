@@ -126,6 +126,9 @@ thilisynth/
       paperwork.py  a Bill of Lading and a Proof of Delivery per load (docs-v1), with scan damage and defects
       paperwork_rules.py  the paperwork desk's tolerances and cost of a wrong field (paperwork-rules-v1)
       paperwork_data.py   builds the paperwork data with one command
+      audit.py      carrier invoices in four dialects, with planted overcharges and the truth (invoices-v1)
+      audit_rules.py  the billing desk's tolerances and the cost of a dispute (auditdesk-rules-v1)
+      audit_data.py   builds the billing data with one command
 ```
 
 ## The booking desk's data
@@ -161,6 +164,24 @@ code, and the post-or-hold outcome is derived from the facts on the documents, n
 
 The cost of posting each field wrong (`paperwork-rules-v1`) is **illustrative**: plausible and consistent,
 not measured, and labelled that way.
+
+## The billing desk's data
+
+After a load is delivered the carrier sends an invoice, and the billing desk decides what Harborline owes. This builds, for each load
+in `tenders-v1`, the rate confirmation (what was agreed), a gate log (when the truck was at each stop) and a carrier invoice, then
+overcharges the invoice in code.
+
+```bash
+python -m thilisynth.packs.logistics.audit_data --out corpora/audit-v1
+```
+
+Five overcharge classes are planted (a linehaul above the agreed rate, a fuel surcharge on too many miles, detention the gate log does
+not support, an extra the booking never authorised, and a duplicate invoice), so every label is true by construction and the amount to
+recover is known to the cent. Carriers word the same charge four different ways. Detention the gate log supports, authorised extras
+and rounding of under a dollar are right and must not be disputed, which is what makes a false dispute possible.
+
+**It contains only the overcharges that were planted.** A system scored on it reports its recall against those, and any recovery
+measured here is an optimistic bound. The costs of a dispute and of a false dispute (`auditdesk-rules-v1`) are illustrative.
 
 `core/` not importing from `packs/` is the load-bearing constraint. The next industry corpus —
 prior-auth letters, FNOL calls, dispute tickets — is a new pack against an unchanged core.
