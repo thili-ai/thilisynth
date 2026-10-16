@@ -269,6 +269,15 @@ def deskcard_card(card: DeskCard) -> str:
         lines.append(f"| `{key}` | {card.tier[key]} | ${cost:,} |")
     lines += [
         "",
+        "## What posting a load that should have been held costs",
+        "",
+        "| Reason it should have been held | Cost |",
+        "|---|---|",
+    ]
+    for reason, cost in sorted(card.missed_hold_cost_usd.items(), key=lambda kv: (-kv[1], kv[0])):
+        lines.append(f"| `{reason}` | ${cost:,} |")
+    lines += [
+        "",
         "## These numbers are illustrative",
         "",
         "They were chosen to be plausible and to hang together: a wrong load reference costs more than a wrong weight, "

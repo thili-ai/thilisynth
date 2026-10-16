@@ -50,6 +50,18 @@ _TIER: Dict[str, str] = {
 }
 
 
+# Cost of posting a load that should have been held, by the reason it should have been held. Illustrative.
+_MISSED_HOLD_COST: Dict[str, int] = {
+    "load_ref_mismatch": 400,
+    "shortage": 300,
+    "damage_noted": 300,
+    "consignee_mismatch": 250,
+    "unsigned": 200,
+    "weight_off": 150,
+    "seal_mismatch": 100,
+}
+
+
 @dataclass(frozen=True)
 class DeskCard:
     as_of: str = "2026-09-01"
@@ -63,6 +75,8 @@ class DeskCard:
     review_cost_usd: float = 3.0
     field_cost_usd: Dict[str, int] = field(default_factory=lambda: dict(_FIELD_COST))
     tier: Dict[str, str] = field(default_factory=lambda: dict(_TIER))
+    # What posting a load that should have been held costs, by reason. A shorted load posted clean loses the claim.
+    missed_hold_cost_usd: Dict[str, int] = field(default_factory=lambda: dict(_MISSED_HOLD_COST))
 
     def cost(self, key: str) -> int:
         """Dollars lost when this field is posted wrong. `key` is '<doc>.<field>'."""

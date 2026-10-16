@@ -220,3 +220,8 @@ def test_the_weight_tolerance_belongs_to_the_card_and_changes_the_truth(tenders)
                if a.outcome.action == "post" and b.outcome.action == "hold")
     # the documents themselves do not depend on the card, only the verdict does
     assert [dataclasses.asdict(a.bol) for a in normal] == [dataclasses.asdict(b.bol) for b in tight]
+
+
+def test_every_hold_reason_has_a_missed_hold_cost():
+    assert set(DESK_CARD.missed_hold_cost_usd) == set(PAPER_REASON_PRIORITY)
+    assert all(v > 0 for v in DESK_CARD.missed_hold_cost_usd.values())
