@@ -175,8 +175,8 @@ overcharges the invoice in code.
 python -m thilisynth.packs.logistics.audit_data --out corpora/audit-v1
 ```
 
-Five overcharge classes are planted (a linehaul above the agreed rate, a fuel surcharge on too many miles, detention the gate log does
-not support, an extra the booking never authorised, and a duplicate invoice), so every label is true by construction and the amount to
+Six overcharge classes are planted (a linehaul above the agreed rate, a fuel surcharge on too many miles, detention the gate log does
+not support, an extra the booking never authorised, an authorised extra billed above the schedule, and a duplicate invoice), so every label is true by construction and the amount to
 recover is known to the cent. Carriers word the same charge four different ways. Detention the gate log supports, authorised extras
 and rounding of under a dollar are right and must not be disputed, which is what makes a false dispute possible.
 

@@ -32,6 +32,7 @@ AUDIT_DEFECTS: Dict[str, float] = {
     "fuel_error": 0.05,
     "detention_overbilled": 0.06,
     "unauthorised_accessorial": 0.05,
+    "accessorial_rate_error": 0.08,
     "duplicate_invoice": 0.03,
 }
 
@@ -41,6 +42,7 @@ EVIDENCE_SOURCE: Dict[str, str] = {
     "fuel_error": "rate_confirmation.miles",
     "detention_overbilled": "gate_log",
     "unauthorised_accessorial": "rate_confirmation.authorised",
+    "accessorial_rate_error": "rate_card.accessorials_usd",
     "duplicate_invoice": "invoice.duplicate_of",
 }
 
@@ -201,6 +203,8 @@ def _make_load(rec: Dict[str, Any], pod_delivered_on: str, i: int, seed: int, ca
     gates = _gate_log(rec, pod_delivered_on, s)
     supported = detention_hours(gates, card)
     billed_acc = [a for a in authorised if s.chance(0.75)]
+    if "accessorial_rate_error" in defects and not billed_acc:
+        defects.remove("accessorial_rate_error")             # nothing was billed to mis-price, so nothing was planted
 
     expected: List[Tuple[str, float, float, float, Optional[str]]] = []   # code, billed, expected, overbilled, class
     lines: List[InvoiceLine] = []
@@ -228,9 +232,14 @@ def _make_load(rec: Dict[str, Any], pod_delivered_on: str, i: int, seed: int, ca
     add("fuel", miles_billed, rate_card.fuel_surcharge_per_mile, fuel_billed, fuel_exp, round(over, 2), "fuel_error" if over else None)
 
     # authorised accessorials that the carrier billed
+    mispriced = s.pick(billed_acc) if "accessorial_rate_error" in defects else None
     for a in billed_acc:
         amt = float(rate_card.accessorials_usd[a])
-        add(a, 1, amt, amt, amt)
+        if a == mispriced:
+            extra = float(s.integer(1, 9) * 5)
+            add(a, 1, amt + extra, amt + extra, amt, extra, "accessorial_rate_error")
+        else:
+            add(a, 1, amt, amt, amt)
 
     # detention
     det_rate = float(rate_card.accessorials_usd["detention"])

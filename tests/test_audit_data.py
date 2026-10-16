@@ -120,6 +120,9 @@ def test_every_overcharge_label_is_true(loads):
         if "unauthorised_accessorial" in l.defects:
             extra = [c for c in by_code if c not in ("linehaul", "fuel", "detention") and c not in rc.authorised]
             assert extra, l.load_id
+        if "accessorial_rate_error" in l.defects:
+            assert any(c not in ("linehaul", "fuel", "detention") and c in rc.authorised and by_code[c].amount > RATE_CARD.accessorials_usd[c]
+                       for c in by_code)
         if "duplicate_invoice" in l.defects:
             dup = l.invoices[1]
             assert dup.duplicate_of == first.invoice_no and dup.invoice_no != first.invoice_no
