@@ -27,6 +27,12 @@ from .cards import carriers_card, ratecard_card, truth_card
 from .carriers import Carrier, generate_carriers
 from .ratecard import RATE_CARD, RateCard
 from .truth import Outcome, build_truth, truth_for, truth_summary
+from .cards import deskcard_card, docs_card, paperwork_truth_card
+from .paperwork import (
+    BOL_FIELDS, POD_FIELDS, Booking, LoadPaperwork, Page, PageTruth, PaperOutcome, Token, canonical_value,
+    generate_docs, generate_paperwork, outcome_for, paperwork_stats,
+)
+from .paperwork_rules import DESK_CARD, DeskCard
 
 # Which record fields `core.verify` checks, and how.
 TENDER_VERIFY = {
@@ -109,4 +115,8 @@ __all__ = [
     # the booking desk's world (carriers-v1, ratecard-v1, and the ground truth)
     "Carrier", "generate_carriers", "RateCard", "RATE_CARD", "Outcome", "build_truth", "truth_for",
     "truth_summary", "carriers_card", "ratecard_card", "truth_card",
+    # the paperwork desk's world (docs-v1, paperwork-rules-v1, and the ground truth)
+    "BOL_FIELDS", "POD_FIELDS", "Booking", "LoadPaperwork", "Page", "PageTruth", "PaperOutcome", "Token",
+    "canonical_value", "generate_docs", "generate_paperwork", "outcome_for", "paperwork_stats",
+    "DESK_CARD", "DeskCard", "docs_card", "deskcard_card", "paperwork_truth_card",
 ]

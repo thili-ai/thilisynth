@@ -121,8 +121,11 @@ thilisynth/
       carriers.py   the carrier master (carriers-v1), with planted vetting traps
       ratecard.py   the booking desk's rates and rules (ratecard-v1)
       truth.py      the right answer for every tender: book a carrier, or escalate for a reason
-      cards.py      corpus cards for the three above
+      cards.py      corpus cards for all of the above
       booking_data.py  builds all of it with one command
+      paperwork.py  a Bill of Lading and a Proof of Delivery per load (docs-v1), with scan damage and defects
+      paperwork_rules.py  the paperwork desk's tolerances and cost of a wrong field (paperwork-rules-v1)
+      paperwork_data.py   builds the paperwork data with one command
 ```
 
 ## The booking desk's data
@@ -138,6 +141,26 @@ python -m thilisynth.packs.logistics.booking_data --out corpora/booking-v1
 It writes the carrier master, the rate card and the ground truth for every tender, each with a corpus card
 that says what it does not contain. The truth is derived in code from facts planted in the data, never asked
 of a model, and its rules live here, apart from any agent's own policy, so an agent cannot mark itself right.
+
+## The paperwork desk's data
+
+After a load is delivered, the Bill of Lading and the Proof of Delivery come back. This builds both for each
+load in `tenders-v1`, so the paperwork shows the freight the tenders described, and derives for each load whether
+the desk should post it or hold it.
+
+```bash
+python -m thilisynth.packs.logistics.paperwork_data --out corpora/paperwork-v1
+```
+
+A page is a list of tokens with boxes, the way an OCR engine returns one, laid out on one of four templates and
+then damaged in code: character swaps, split tokens, lost tokens. **It is not an image, and the damage is modelled,
+not sampled from real scanners.** The corpus card says so. In exchange every error is attributable, because the
+generator recorded exactly which token it changed. Seven paperwork defects (a shortage, a damage note, a weight off
+tolerance, the wrong receiver, a seal that differs, a missing signature, the wrong load reference) are planted in
+code, and the post-or-hold outcome is derived from the facts on the documents, never from the damage.
+
+The cost of posting each field wrong (`paperwork-rules-v1`) is **illustrative**: plausible and consistent,
+not measured, and labelled that way.
 
 `core/` not importing from `packs/` is the load-bearing constraint. The next industry corpus —
 prior-auth letters, FNOL calls, dispute tickets — is a new pack against an unchanged core.
