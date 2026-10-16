@@ -141,7 +141,7 @@ class PageTruth:
     values: Dict[str, str]                    # canonical true value of every field
     roles: List[str]                          # per token: "label" | "value" | "other"
     fields: List[Optional[str]]               # per token: the field a label names or a value belongs to
-    clean: List[str]                          # per token: the text before damage
+    clean: List[str]                          # per token: the text before damage (both halves of a split token carry the original)
     damaged: List[bool]                       # per token: did damage change it
     damaged_fields: List[str]                 # fields with a damaged value token
     dropped_fields: List[str]                 # fields whose value tokens were all lost
@@ -223,6 +223,10 @@ def _words(items: List[dict], text: str, x: int, y: int, role: str, fld: Optiona
     return x
 
 
+# The left-to-right order of the line-item columns on the templates that print them as a table.
+_ITEM_ORDER = ["pieces", "pieces_received", "commodity", "hs_code", "weight_lb"]
+
+
 def _place(template: int, doc: str, fields: Sequence[str]) -> Dict[str, Tuple[int, int, int, int]]:
     """(label_x, label_y, value_x, value_y) for every field, on this template."""
     group = _GROUP[doc]
@@ -239,20 +243,20 @@ def _place(template: int, doc: str, fields: Sequence[str]) -> Dict[str, Tuple[in
     elif template == 2:                                 # party blocks side by side, a row of references, an item table
         parties = [f for f in fields if group[f] == "party"]
         refs = [f for f in fields if group[f] == "ref"]
-        items = [f for f in fields if group[f] == "item"]
+        items = sorted((f for f in fields if group[f] == "item"), key=_ITEM_ORDER.index)
         rest = [f for f in fields if group[f] == "rest"]
         for k, f in enumerate(parties):
             out[f] = (50 + 400 * k, 130, 50 + 400 * k, 154)
         for k, f in enumerate(refs):
             out[f] = (50 + 200 * k, 230, 50 + 200 * k, 254)
-        for f, x in zip(items, (50, 150, 480, 600)):
+        for f, x in zip(items, (50, 130, 500, 620)):
             out[f] = (x, 340, x, 364)
         for k, f in enumerate(rest):
             out[f] = (50 + 400 * (k % 2), 450 + 80 * (k // 2), 50 + 400 * (k % 2), 474 + 80 * (k // 2))
     else:                                               # references down the left, stacked parties, an item table
         refs = [f for f in fields if group[f] == "ref"]
         parties = [f for f in fields if group[f] == "party"]
-        items = [f for f in fields if group[f] == "item"]
+        items = sorted((f for f in fields if group[f] == "item"), key=_ITEM_ORDER.index)
         rest = [f for f in fields if group[f] == "rest"]
         y = 130
         for f in refs:
@@ -263,7 +267,7 @@ def _place(template: int, doc: str, fields: Sequence[str]) -> Dict[str, Tuple[in
             out[f] = (50, y, 50, y + 24)
             y += 70
         y += 20
-        for f, x in zip(items, (50, 130, 480, 620)):
+        for f, x in zip(items, (50, 130, 500, 620)):
             out[f] = (x, y, x, y + 24)
         y += 90
         for f in rest:
