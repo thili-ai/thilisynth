@@ -32,9 +32,9 @@ sample  ->  render  ->  VERIFY  ->  damage  ->  corpus card
 > ⚠️ **Educational reference, not production.** A few hundred lines of stdlib Python you can hold in
 > your head. It is built to be read and modified, not deployed.
 
-## Built lesson-by-lesson in a Learn Fast course
+## Built lesson-by-lesson in an askThili course
 
-This is the reference implementation for **[Generate Your Own Industry Dataset](https://learnfast.thili.ai)**,
+This is the reference implementation for **[Generate Your Own Industry Dataset](https://ask.thili.ai)**,
 drill 1 of the Freight & Logistics track. You build it yourself; this repo is here to unblock you and
 to check your work.
 
